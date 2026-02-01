@@ -18,6 +18,21 @@ namespace ConferenceRoom.Api.Models.Extensions
             };
         }
 
+        public static UserEntity MapToEntity(this CreateUserRequest request)
+        {
+            return new UserEntity
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName
+            };
+        }
+
+        public static void UpdateFromRequest(this UserEntity user, UpdateUserRequest request)
+        {
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+        }
+
         public static List<UserDto> MapToDto(this IEnumerable<UserEntity> users)
         {
             return users.Select(u => u.MapToDto()).ToList();

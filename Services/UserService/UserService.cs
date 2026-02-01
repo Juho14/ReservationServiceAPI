@@ -1,5 +1,4 @@
 ﻿using ConferenceRoom.Api.Data;
-using ConferenceRoom.Api.DTOs.Reservations;
 using ConferenceRoom.Api.DTOs.Users;
 using ConferenceRoom.Api.Models;
 using ConferenceRoom.Api.Models.Extensions;
@@ -45,22 +44,12 @@ namespace ConferenceRoom.Api.Services.UserService
 
         public async Task<Result<UserDto>> CreateUserAsync(CreateUserRequest request)
         {
-            var entity = new UserEntity
-            {
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                CreatedAt = DateTime.UtcNow
-            };
+            var entity = request.MapToEntity();
 
             _context.Users.Add(entity);
             await _context.SaveChangesAsync();
 
-            return Result<UserDto>.Success(new UserDto
-            {
-                Id = entity.Id,
-                FirstName = entity.FirstName,
-                LastName = entity.LastName
-            });
+            return Result<UserDto>.Success(entity.MapToDto());
         }
 
         public async Task<Result<UserDto>> UpdateUserAsync(int id, UpdateUserRequest request)
@@ -69,17 +58,10 @@ namespace ConferenceRoom.Api.Services.UserService
             if (user == null)
                 return Result<UserDto>.Failure($"User with id {id} not found.");
 
-            user.FirstName = request.FirstName;
-            user.LastName = request.LastName;
-
+            user.UpdateFromRequest(request);
             await _context.SaveChangesAsync();
 
-            return Result<UserDto>.Success(new UserDto
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName
-            });
+            return Result<UserDto>.Success(user.MapToDto());
         }
 
         public async Task<Result<bool>> DeleteUserAsync(int id)
@@ -88,9 +70,7 @@ namespace ConferenceRoom.Api.Services.UserService
             if (user == null)
                 return Result<bool>.Failure($"User with id {id} not found.");
 
-            user.Deleted = true;
-            user.DeletedAt = DateTime.UtcNow;
-
+            user.DeleteEntity();
             await _context.SaveChangesAsync();
             return Result<bool>.Success(true);
         }

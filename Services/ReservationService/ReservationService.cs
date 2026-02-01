@@ -54,15 +54,7 @@ namespace ConferenceRoom.Api.Services.ReservationService
             if (overlapping)
                 return Result<ReservationDTO>.Failure("This room is already booked during the selected time.");
 
-            var entity = new ReservationEntity
-            {
-                UserId = request.UserId,
-                RoomId = request.RoomId,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
-                Status = "Active",
-                CreatedAt = DateTime.UtcNow
-            };
+            var entity = request.MapToEntity();
 
             if (!entity.IsValid(out var error))
                 return Result<ReservationDTO>.Failure(error);
@@ -86,7 +78,6 @@ namespace ConferenceRoom.Api.Services.ReservationService
             if (reservation.StartTime.Date <= DateTime.UtcNow.Date)
                 return Result<ReservationDTO>.Failure("Cannot update a reservation on the same day.");
 
-            // Optional: check for overlapping reservations
             var overlapping = await _context.Reservations
                 .Where(r => r.Id != id &&
                             r.RoomId == reservation.RoomId &&
@@ -104,9 +95,7 @@ namespace ConferenceRoom.Api.Services.ReservationService
             if (await reservation.HasOverlappingReservationAsync(_context))
                 return Result<ReservationDTO>.Failure("User already has a reservation during this time.");
 
-            reservation.StartTime = request.StartTime;
-            reservation.EndTime = request.EndTime;
-            reservation.Status = request.Status;
+            reservation.UpdateFromRequest(request);
 
             await _context.SaveChangesAsync();
 
@@ -119,9 +108,7 @@ namespace ConferenceRoom.Api.Services.ReservationService
             if (reservation == null)
                 return Result<bool>.Failure($"Reservation with id {id} not found.");
 
-            reservation.Deleted = true;
-            reservation.DeletedAt = DateTime.UtcNow;
-
+            reservation.DeleteEntity();
             await _context.SaveChangesAsync();
             return Result<bool>.Success(true);
         }

@@ -1,5 +1,4 @@
 ﻿using ConferenceRoom.Api.Data;
-using ConferenceRoom.Api.DTOs.Reservations;
 using ConferenceRoom.Api.DTOs.Rooms;
 using ConferenceRoom.Api.Models;
 using ConferenceRoom.Api.Models.Extensions;
@@ -48,22 +47,11 @@ namespace ConferenceRoom.Api.Services.RoomService
 
         public async Task<Result<RoomDTO>> CreateRoomAsync(CreateRoomRequest request)
         {
-            var entity = new RoomEntity
-            {
-                Name = request.Name,
-                Capacity = request.Capacity,
-                CreatedAt = DateTime.UtcNow
-            };
-
+            var entity = request.MapToEntity();
             _context.Rooms.Add(entity);
             await _context.SaveChangesAsync();
 
-            return Result<RoomDTO>.Success(new RoomDTO
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                Capacity = entity.Capacity
-            });
+            return Result<RoomDTO>.Success(entity.MapToDto());
         }
 
         public async Task<Result<RoomDTO>> UpdateRoomAsync(int id, UpdateRoomRequest request)
@@ -72,17 +60,9 @@ namespace ConferenceRoom.Api.Services.RoomService
             if (room == null)
                 return Result<RoomDTO>.Failure($"Room with id {id} not found.");
 
-            room.Name = request.Name;
-            room.Capacity = request.Capacity;
-
+            room.UpdateFromRequest(request);
             await _context.SaveChangesAsync();
-
-            return Result<RoomDTO>.Success(new RoomDTO
-            {
-                Id = room.Id,
-                Name = room.Name,
-                Capacity = room.Capacity
-            });
+            return Result<RoomDTO>.Success(room.MapToDto());
         }
 
         public async Task<Result<bool>> DeleteRoomAsync(int id)
@@ -91,8 +71,7 @@ namespace ConferenceRoom.Api.Services.RoomService
             if (room == null)
                 return Result<bool>.Failure($"Room with id {id} not found.");
 
-            room.Deleted = true;
-            room.DeletedAt = DateTime.UtcNow;
+            room.DeleteEntity();
 
             await _context.SaveChangesAsync();
             return Result<bool>.Success(true);

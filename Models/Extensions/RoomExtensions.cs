@@ -18,6 +18,22 @@ namespace ConferenceRoom.Api.Models.Extensions
             };
         }
 
+        public static RoomEntity MapToEntity(this CreateRoomRequest request)
+        {
+            return new RoomEntity
+            {
+                Name = request.Name,
+                Capacity = request.Capacity
+            };
+        }
+
+        public static void UpdateFromRequest(this RoomEntity room, UpdateRoomRequest request)
+        {
+            room.Name = request.Name;
+            room.Capacity = request.Capacity;
+        }
+
+
         public static List<RoomDTO> MapToDto(this IEnumerable<RoomEntity> rooms)
         {
             return rooms.Select(r => r.MapToDto()).ToList();

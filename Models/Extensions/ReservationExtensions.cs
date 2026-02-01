@@ -23,6 +23,25 @@ namespace ConferenceRoom.Api.Models.Extensions
             };
         }
 
+        public static ReservationEntity MapToEntity(this CreateReservationRequest request)
+        {
+            return new ReservationEntity
+            {
+                UserId = request.UserId,
+                RoomId = request.RoomId,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                Status = "Active"
+            };
+        }
+
+        public static void UpdateFromRequest(this ReservationEntity reservation, UpdateReservationRequest request)
+        {
+            reservation.StartTime = request.StartTime;
+            reservation.EndTime = request.EndTime;
+            reservation.Status = request.Status;
+        }
+
         public static List<ReservationDTO> MapToDto(this IEnumerable<ReservationEntity> reservations)
         {
             return reservations.Select(r => r.MapToDto()).ToList();
