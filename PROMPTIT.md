@@ -1,5 +1,6 @@
 Conversation with AI
 
+Part 1:
 ________________________________________________________________________________
 
 Prompt:
@@ -2422,3 +2423,183 @@ If you want, next we can:
 * Or convert this into a **template repo**
 
 Just tell me where you want to take it next.
+
+______________________________________________________________________________________
+
+Part 2:
+
+______________________________________________________________________________________
+
+Prompt:
+
+        public static bool HasValidTimeRange(this ReservationEntity reservation, out string? error)
+        {
+            if (reservation.EndTime <= reservation.StartTime)
+            {
+                error = "EndTime must be after StartTime.";
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
+
+        public static bool HasFutureStartTime(this ReservationEntity reservation, out string? error)
+        {
+            if (reservation.StartTime < DateTime.UtcNow)
+            {
+                error = "StartTime cannot be in the past.";
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
+
+        public static bool IsValid(this ReservationEntity reservation, out string? error)
+        {
+            if (!reservation.HasValidTimeRange(out error))
+                return false;
+
+            if (!reservation.HasFutureStartTime(out error))
+                return false;
+
+            error = null;
+            return true;
+        }
+
+I want to assert that if this function returns false, the error will always be present. This way the  validation becomes type safe.
+
+Response:
+
+Ah, now I see exactly what you want: you want **type-safe validation** so that if `IsValid()` returns `false`, the `error` string is **guaranteed to be non-null**, avoiding the `error` being null when the check fails.
+
+Right now, your `out string? error` allows `null`, which makes the compiler unsure. There are a few ways to handle this in C#.
+
+---
+
+## 1️⃣ Use **nullable reference type annotations with `[NotNullWhen]`**
+
+C# has a special attribute:
+
+```csharp
+using System.Diagnostics.CodeAnalysis;
+```
+
+You can annotate your method like this:
+
+```csharp
+public static bool IsValid(this ReservationEntity reservation, [NotNullWhen(false)] out string? error)
+{
+    if (!reservation.HasValidTimeRange(out error))
+        return false;
+
+    if (!reservation.HasFutureStartTime(out error))
+        return false;
+
+    error = null; // will never hit this when returning false
+    return true;
+}
+```
+
+### How it works
+
+* `[NotNullWhen(false)]` means:
+
+  > “When the method returns `false`, `error` is guaranteed to be non-null.”
+* The compiler now knows it’s **safe to use `error`** when the validation fails:
+
+```csharp
+if (!reservation.IsValid(out var error))
+{
+    Console.WriteLine(error.Length); // ✅ compiler knows error is not null
+}
+```
+
+---
+
+## 2️⃣ Apply it to all your validators
+
+Example:
+
+```csharp
+public static bool HasValidTimeRange(this ReservationEntity reservation, [NotNullWhen(false)] out string? error)
+{
+    if (reservation.EndTime <= reservation.StartTime)
+    {
+        error = "EndTime must be after StartTime.";
+        return false;
+    }
+
+    error = null;
+    return true;
+}
+
+public static bool HasFutureStartTime(this ReservationEntity reservation, [NotNullWhen(false)] out string? error)
+{
+    if (reservation.StartTime < DateTime.UtcNow)
+    {
+        error = "StartTime cannot be in the past.";
+        return false;
+    }
+
+    error = null;
+    return true;
+}
+```
+
+Then your `IsValid`:
+
+```csharp
+public static bool IsValid(this ReservationEntity reservation, [NotNullWhen(false)] out string? error)
+{
+    if (!reservation.HasValidTimeRange(out error))
+        return false;
+
+    if (!reservation.HasFutureStartTime(out error))
+        return false;
+
+    error = null;
+    return true;
+}
+```
+
+Now the compiler can **infer** that:
+
+* If `IsValid` returns `false`, `error` is **not null**
+* If `IsValid` returns `true`, `error` is null
+
+---
+
+## 3️⃣ Benefits
+
+* **Compile-time safety** — no more accidentally using `error` when it might be null
+* Still returns a boolean like normal `TryParse` patterns
+* Works nicely with **modern nullable reference types**
+
+---
+
+### Optional: Return a `Result<T>` for even stronger guarantees
+
+Some teams prefer **functional style**:
+
+```csharp
+public record ValidationResult(bool IsValid, string? Error);
+
+public static ValidationResult Validate(this ReservationEntity reservation)
+{
+    if (!reservation.HasValidTimeRange(out var error)) return new(false, error);
+    if (!reservation.HasFutureStartTime(out error)) return new(false, error);
+
+    return new(true, null);
+}
+```
+
+* Guarantees `Error` is only non-null when `IsValid` is `false`
+* Can be chained in LINQ or used in pipelines
+
+---
+
+If you want, I can **rewrite your entire `ReservationEntity` validation** in a **fully type-safe way using `[NotNullWhen]`** or a `Result`-style approach, so the compiler knows `error` is always present when validation fails.
+
+Do you want me to do that?

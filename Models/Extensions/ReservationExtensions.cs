@@ -2,6 +2,7 @@
 using ConferenceRoom.Api.DTOs.Reservations;
 using ConferenceRoom.Api.Enums;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ConferenceRoom.Api.Models.Extensions
 {
@@ -91,7 +92,7 @@ namespace ConferenceRoom.Api.Models.Extensions
         }
 
 
-        public static async Task<bool> HasOverlappingReservationAsync(
+        public static async Task<bool> UserHasOverlappingReservation(
             this ReservationEntity reservation,
             AppDbContext context)
         {
@@ -99,6 +100,13 @@ namespace ConferenceRoom.Api.Models.Extensions
                 .Where(r => r.UserId == reservation.UserId && r.Id != reservation.Id && !r.Deleted)
                 .Where(r => r.StartTime < reservation.EndTime && r.EndTime > reservation.StartTime)
                 .AnyAsync();
+        }
+
+        public static Expression<Func<ReservationEntity, bool>> Overlaps(ReservationEntity req)
+        {
+            return r => r.RoomId == req.RoomId &&
+                        r.EndTime > req.StartTime &&
+                        r.StartTime < req.EndTime;
         }
     }
 }

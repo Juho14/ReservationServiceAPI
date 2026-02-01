@@ -40,24 +40,25 @@ namespace ConferenceRoom.Api.Services.ReservationService
             return Result<ReservationDTO>.Success(reservation.MapToDto());
         }
 
+        private async Task<bool> IsOverLappingReservation(ReservationEntity entity)
+        {
+            return await _context.Reservations
+                .Where(ReservationExtensions.Overlaps(entity))
+                .AnyAsync();
+        }
+
         public async Task<Result<ReservationDTO>> CreateReservationAsync(CreateReservationRequest request)
         {
-            var overlapping = await _context.Reservations
-                .Where(r => r.RoomId == request.RoomId &&
-                            r.EndTime > request.StartTime &&
-                            r.StartTime < request.EndTime &&
-                            !r.Deleted)
-                .AnyAsync();
-
-            if (overlapping)
-                return Result<ReservationDTO>.Failure("This room is already booked during the selected time.");
 
             var entity = request.MapToEntity();
+
+            if (await IsOverLappingReservation(entity))
+                return Result<ReservationDTO>.Failure("This room is already booked during the selected time.");
 
             if (!entity.IsValid(out var error))
                 return Result<ReservationDTO>.Failure(error);
 
-            if (await entity.HasOverlappingReservationAsync(_context))
+            if (await entity.UserHasOverlappingReservation(_context))
                 return Result<ReservationDTO>.Failure("User already has a reservation during this time.");
 
             _context.Reservations.Add(entity);
@@ -76,24 +77,16 @@ namespace ConferenceRoom.Api.Services.ReservationService
             if (reservation.StartTime.Date <= DateTime.UtcNow.Date)
                 return Result<ReservationDTO>.Failure("Cannot update a reservation on the same day.");
 
-            var overlapping = await _context.Reservations
-                .Where(r => r.Id != id &&
-                            r.RoomId == reservation.RoomId &&
-                            r.EndTime > request.StartTime &&
-                            r.StartTime < request.EndTime &&
-                            !r.Deleted)
-                .AnyAsync();
+            reservation.UpdateFromRequest(request);
 
-            if (overlapping)
+            if (await IsOverLappingReservation(reservation))
                 return Result<ReservationDTO>.Failure("This room is already booked during the selected time.");
 
             if (!reservation.IsValid(out var error))
                 return Result<ReservationDTO>.Failure(error);
 
-            if (await reservation.HasOverlappingReservationAsync(_context))
+            if (await reservation.UserHasOverlappingReservation(_context))
                 return Result<ReservationDTO>.Failure("User already has a reservation during this time.");
-
-            reservation.UpdateFromRequest(request);
 
             await _context.SaveChangesAsync();
 
