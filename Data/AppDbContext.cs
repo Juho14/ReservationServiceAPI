@@ -5,14 +5,8 @@ namespace ConferenceRoom.Api.Data
 {
 
 
-    public class AppDbContext : DbContext
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
-        {
-        }
-
-
         public DbSet<UserEntity> Users => Set<UserEntity>();
         public DbSet<RoomEntity> Rooms => Set<RoomEntity>();
         public DbSet<ReservationEntity> Reservations => Set<ReservationEntity>();
@@ -43,12 +37,11 @@ namespace ConferenceRoom.Api.Data
                         .GetMethod(nameof(ApplySoftDeleteFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
                         .MakeGenericMethod(entityType.ClrType);
 
-                    method.Invoke(null, new object[] { modelBuilder });
+                    method.Invoke(null, [modelBuilder]);
                 }
             }
         }
 
-        // Strongly-typed method for filter
         private static void ApplySoftDeleteFilter<TEntity>(ModelBuilder builder)
             where TEntity : BaseEntity
         {

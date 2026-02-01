@@ -14,7 +14,7 @@ namespace ConferenceRoom.Api.Models.Extensions
                 Id = room.Id,
                 Name = room.Name,
                 Capacity = room.Capacity,
-                Reservations = room.Reservations?.MapToDto() ?? new List<ReservationDTO>()
+                Reservations = room.Reservations?.MapToDto() ?? []
             };
         }
 
@@ -36,7 +36,7 @@ namespace ConferenceRoom.Api.Models.Extensions
 
         public static List<RoomDTO> MapToDto(this IEnumerable<RoomEntity> rooms)
         {
-            return rooms.Select(r => r.MapToDto()).ToList();
+            return [.. rooms.Select(r => r.MapToDto())];
         }
     }
 }

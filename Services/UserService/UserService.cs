@@ -6,14 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConferenceRoom.Api.Services.UserService
 {
-    public class UserService : IUserService
+    public class UserService(AppDbContext context) : IUserService
     {
-        private readonly AppDbContext _context;
-
-        public UserService(AppDbContext context)
-        {
-            _context = context;
-        }
+        private readonly AppDbContext _context = context;
 
         public async Task<Result<List<UserDto>>> GetAllUsersAsync(bool includeDeleted = false)
         {

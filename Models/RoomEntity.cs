@@ -4,6 +4,6 @@
     {
         public string Name { get; set; } = null!;
         public int Capacity { get; set; }
-        public ICollection<ReservationEntity> Reservations { get; set; } = new List<ReservationEntity>();
+        public ICollection<ReservationEntity> Reservations { get; set; } = [];
     }
 }

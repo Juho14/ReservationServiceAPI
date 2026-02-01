@@ -6,14 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConferenceRoom.Api.Services.ReservationService
 {
-    public class ReservationService : IReservationService
+    public class ReservationService(AppDbContext context) : IReservationService
     {
-        private readonly AppDbContext _context;
-
-        public ReservationService(AppDbContext context)
-        {
-            _context = context;
-        }
+        private readonly AppDbContext _context = context;
 
         public async Task<Result<List<ReservationDTO>>> GetAllReservationsAsync(bool includeDeleted = false)
         {

@@ -14,7 +14,7 @@ namespace ConferenceRoom.Api.Models.Extensions
                 Id = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Reservations = user.Reservations?.MapToDto() ?? new List<ReservationDTO>()
+                Reservations = user.Reservations?.MapToDto() ?? []
             };
         }
 
@@ -35,7 +35,7 @@ namespace ConferenceRoom.Api.Models.Extensions
 
         public static List<UserDto> MapToDto(this IEnumerable<UserEntity> users)
         {
-            return users.Select(u => u.MapToDto()).ToList();
+            return [.. users.Select(u => u.MapToDto())];
         }
     }
 }
