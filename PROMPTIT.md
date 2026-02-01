@@ -2603,3 +2603,110 @@ public static ValidationResult Validate(this ReservationEntity reservation)
 If you want, I can **rewrite your entire `ReservationEntity` validation** in a **fully type-safe way using `[NotNullWhen]`** or a `Result`-style approach, so the compiler knows `error` is always present when validation fails.
 
 Do you want me to do that?
+
+__________________________________________________________________________________________________
+
+Prompt:
+
+When using the in memory DB through EntityFramework, Im facing a weird issue. Its not enforcing the foreign keys, unlike in a regular relational DB setup. How can I solve this?
+
+Response:
+
+Ah — this is a **very common “gotcha” with EF Core In-Memory provider**. It’s subtle but important. Let me explain and give a robust solution.
+
+---
+
+## 1. Why it happens
+
+* The **InMemory database provider** is **not a relational database**.
+* EF Core allows you to define **foreign key relationships** in your models, but the InMemory provider **does not enforce them**.
+* That means:
+
+```csharp
+var reservation = new ReservationEntity { RoomId = 999, UserId = 888 };
+_context.Reservations.Add(reservation);
+await _context.SaveChangesAsync();
+```
+
+This will succeed **even if RoomId or UserId do not exist**.
+
+✅ Works fine for testing **basic CRUD**,
+❌ but cannot rely on FK constraints like a real SQL Server, SQLite, or PostgreSQL DB.
+
+---
+
+## 2. Options to enforce relational integrity
+
+### Option A: Switch to SQLite in-memory
+
+EF Core can use **SQLite in-memory mode**. This **behaves like a relational DB** and enforces:
+
+* Foreign keys
+* Unique constraints
+* Check constraints (if defined)
+
+Example in `Program.cs`:
+
+```csharp
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlite("DataSource=:memory:"); // in-memory SQLite
+});
+```
+
+Then, after creating the `DbContext`, you must open the connection and ensure the schema is created:
+
+```csharp
+var context = app.Services.GetRequiredService<AppDbContext>();
+context.Database.OpenConnection();
+context.Database.EnsureCreated();
+```
+
+✅ Pros: Real FK enforcement, better tests
+❌ Slightly slower than InMemory, but negligible for most dev/test scenarios
+
+---
+
+### Option B: Manual validation in your service layer
+
+Since you already have **services & extensions**, you can **validate relationships manually**:
+
+```csharp
+var userExists = await _context.Users.AnyAsync(u => u.Id == request.UserId);
+var roomExists = await _context.Rooms.AnyAsync(r => r.Id == request.RoomId);
+
+if (!userExists)
+    return Result<ReservationDto>.Failure("User does not exist.");
+if (!roomExists)
+    return Result<ReservationDto>.Failure("Room does not exist.");
+```
+
+✅ Pros: Works with InMemory
+❌ Must remember to validate everywhere, not automatic like real FK
+
+---
+
+### Option C: Use relational database even in memory tests
+
+You can also use **SQL Server LocalDB** or **Dockerized SQL Server** for testing. That way:
+
+* FKs, constraints, indexes behave exactly like prod
+* InMemory is only used for super-fast unit tests where FK enforcement isn’t needed
+
+---
+
+## 3. Recommendation
+
+* For **unit testing / rapid prototyping** → keep InMemory but **add service-level validation** (Option B)
+* For **integration tests / realistic scenario** → use SQLite in-memory or LocalDB (Option A)
+
+This is why many teams **mix both**:
+
+* Unit tests → EF InMemory
+* Integration / API tests → SQLite in-memory
+
+---
+
+If you want, I can **refactor your ReservationService** to **check RoomId and UserId automatically when using InMemory DB** so that you get FK enforcement in your current setup without switching providers.
+
+Do you want me to do that?
