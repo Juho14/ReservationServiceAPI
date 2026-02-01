@@ -93,15 +93,15 @@ namespace ConferenceRoom.Api.Services.ReservationService
             return await GetReservationByIdAsync(id, includeDeleted: true);
         }
 
-        public async Task<Result<bool>> DeleteReservationAsync(int id)
+        public async Task<Result<string>> DeleteReservationAsync(int id)
         {
             var reservation = await _context.Reservations.FindAsync(id);
             if (reservation == null)
-                return Result<bool>.Failure($"Reservation with id {id} not found.");
+                return Result<string>.Failure($"Reservation with id {id} not found.");
 
             reservation.DeleteReservation();
             await _context.SaveChangesAsync();
-            return Result<bool>.Success(true);
+            return Result<string>.Success("Deletion successful!");
         }
     }
 }

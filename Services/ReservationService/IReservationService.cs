@@ -9,7 +9,7 @@ namespace ConferenceRoom.Api.Services.ReservationService
         Task<Result<ReservationDTO>> GetReservationByIdAsync(int id, bool includeDeleted = false);
         Task<Result<ReservationDTO>> CreateReservationAsync(CreateReservationRequest request);
         Task<Result<ReservationDTO>> UpdateReservationAsync(int id, UpdateReservationRequest request);
-        Task<Result<bool>> DeleteReservationAsync(int id);
+        Task<Result<string>> DeleteReservationAsync(int id);
     }
 
 }

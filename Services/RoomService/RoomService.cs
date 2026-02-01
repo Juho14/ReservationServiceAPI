@@ -63,16 +63,16 @@ namespace ConferenceRoom.Api.Services.RoomService
             return Result<RoomDTO>.Success(room.MapToDto());
         }
 
-        public async Task<Result<bool>> DeleteRoomAsync(int id)
+        public async Task<Result<string>> DeleteRoomAsync(int id)
         {
             var room = await _context.Rooms.FindAsync(id);
             if (room == null)
-                return Result<bool>.Failure($"Room with id {id} not found.");
+                return Result<string>.Failure($"Room with id {id} not found.");
 
             room.DeleteEntity();
 
             await _context.SaveChangesAsync();
-            return Result<bool>.Success(true);
+            return Result<string>.Success("Deletion successful!");
         }
     }
 }

@@ -9,7 +9,7 @@ namespace ConferenceRoom.Api.Services.RoomService
         Task<Result<RoomDTO>> GetRoomByIdAsync(int id, bool includeDeleted = false);
         Task<Result<RoomDTO>> CreateRoomAsync(CreateRoomRequest request);
         Task<Result<RoomDTO>> UpdateRoomAsync(int id, UpdateRoomRequest request);
-        Task<Result<bool>> DeleteRoomAsync(int id);
+        Task<Result<string>> DeleteRoomAsync(int id);
     }
 
 }

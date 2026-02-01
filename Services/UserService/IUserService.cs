@@ -9,7 +9,7 @@ namespace ConferenceRoom.Api.Services.UserService
         Task<Result<UserDto>> GetUserByIdAsync(int id, bool includeDeleted = false);
         Task<Result<UserDto>> CreateUserAsync(CreateUserRequest request);
         Task<Result<UserDto>> UpdateUserAsync(int id, UpdateUserRequest request);
-        Task<Result<bool>> DeleteUserAsync(int id); // soft delete
+        Task<Result<string>> DeleteUserAsync(int id);
     }
 
 }

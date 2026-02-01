@@ -62,15 +62,15 @@ namespace ConferenceRoom.Api.Services.UserService
             return Result<UserDto>.Success(user.MapToDto());
         }
 
-        public async Task<Result<bool>> DeleteUserAsync(int id)
+        public async Task<Result<string>> DeleteUserAsync(int id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null)
-                return Result<bool>.Failure($"User with id {id} not found.");
+                return Result<string>.Failure($"User with id {id} not found.");
 
             user.DeleteEntity();
             await _context.SaveChangesAsync();
-            return Result<bool>.Success(true);
+            return Result<string>.Success("Deletion successful!");
         }
     }
 }
