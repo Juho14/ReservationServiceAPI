@@ -83,7 +83,7 @@ namespace ConferenceRoom.Api.Services.ReservationService
             if (reservation == null)
                 return Result<ReservationDTO>.Failure($"Reservation with id {id} not found.");
 
-            if (reservation.StartTime.Date == DateTime.UtcNow.Date)
+            if (reservation.StartTime.Date <= DateTime.UtcNow.Date)
                 return Result<ReservationDTO>.Failure("Cannot update a reservation on the same day.");
 
             // Optional: check for overlapping reservations
