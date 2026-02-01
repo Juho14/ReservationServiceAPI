@@ -1,4 +1,6 @@
-﻿namespace ConferenceRoom.Api.Models
+﻿using ConferenceRoom.Api.Enums;
+
+namespace ConferenceRoom.Api.Models
 {
     public class ReservationEntity : BaseEntity
     {
@@ -8,6 +10,6 @@
         public RoomEntity Room { get; set; } = null!;
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public string Status { get; set; } = "Active";
+        public ReservationStatus Status { get; set; } = ReservationStatus.Active;
     }
 }

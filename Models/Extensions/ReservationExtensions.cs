@@ -1,5 +1,6 @@
 ﻿using ConferenceRoom.Api.Data;
 using ConferenceRoom.Api.DTOs.Reservations;
+using ConferenceRoom.Api.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConferenceRoom.Api.Models.Extensions
@@ -31,7 +32,7 @@ namespace ConferenceRoom.Api.Models.Extensions
                 RoomId = request.RoomId,
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
-                Status = "Active"
+                Status = ReservationStatus.Active
             };
         }
 
@@ -40,6 +41,12 @@ namespace ConferenceRoom.Api.Models.Extensions
             reservation.StartTime = request.StartTime;
             reservation.EndTime = request.EndTime;
             reservation.Status = request.Status;
+        }
+
+        public static void DeleteReservation(this ReservationEntity reservation)
+        {
+            reservation.DeleteEntity();
+            reservation.Status = ReservationStatus.Deleted;
         }
 
         public static List<ReservationDTO> MapToDto(this IEnumerable<ReservationEntity> reservations)

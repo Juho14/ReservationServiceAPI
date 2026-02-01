@@ -108,7 +108,7 @@ namespace ConferenceRoom.Api.Services.ReservationService
             if (reservation == null)
                 return Result<bool>.Failure($"Reservation with id {id} not found.");
 
-            reservation.DeleteEntity();
+            reservation.DeleteReservation();
             await _context.SaveChangesAsync();
             return Result<bool>.Success(true);
         }
