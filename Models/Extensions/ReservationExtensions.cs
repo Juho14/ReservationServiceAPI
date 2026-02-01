@@ -2,6 +2,7 @@
 using ConferenceRoom.Api.DTOs.Reservations;
 using ConferenceRoom.Api.Enums;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace ConferenceRoom.Api.Models.Extensions
@@ -55,7 +56,7 @@ namespace ConferenceRoom.Api.Models.Extensions
             return reservations.Select(r => r.MapToDto()).ToList();
         }
 
-        public static bool HasValidTimeRange(this ReservationEntity reservation, out string? error)
+        public static bool HasValidTimeRange(this ReservationEntity reservation, [NotNullWhen(false)] out string? error)
         {
             if (reservation.EndTime <= reservation.StartTime)
             {
@@ -67,7 +68,7 @@ namespace ConferenceRoom.Api.Models.Extensions
             return true;
         }
 
-        public static bool HasFutureStartTime(this ReservationEntity reservation, out string? error)
+        public static bool HasFutureStartTime(this ReservationEntity reservation, [NotNullWhen(false)] out string? error)
         {
             if (reservation.StartTime < DateTime.UtcNow)
             {
@@ -79,7 +80,7 @@ namespace ConferenceRoom.Api.Models.Extensions
             return true;
         }
 
-        public static bool IsValid(this ReservationEntity reservation, out string? error)
+        public static bool IsValid(this ReservationEntity reservation, [NotNullWhen(false)] out string? error)
         {
             if (!reservation.HasValidTimeRange(out error))
                 return false;
@@ -87,7 +88,6 @@ namespace ConferenceRoom.Api.Models.Extensions
             if (!reservation.HasFutureStartTime(out error))
                 return false;
 
-            error = null;
             return true;
         }
 
