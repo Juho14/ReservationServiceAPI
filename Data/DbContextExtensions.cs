@@ -8,10 +8,10 @@ namespace ConferenceRoom.Api.Data
         /// <summary>
         /// Opt-out of the global soft-delete filter to include deleted entities.
         /// </summary>
-        public static IQueryable<T> IncludeDeleted<T>(this IQueryable<T> query)
+        public static IQueryable<T> IncludeDeleted<T>(this IQueryable<T> query, bool includeDeleted)
         where T : BaseEntity
         {
-            return query.IgnoreQueryFilters();
+            return includeDeleted ? query.IgnoreQueryFilters() : query;
         }
     }
 }

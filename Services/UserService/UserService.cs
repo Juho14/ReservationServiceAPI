@@ -17,9 +17,8 @@ namespace ConferenceRoom.Api.Services.UserService
 
         public async Task<Result<List<UserDto>>> GetAllUsersAsync(bool includeDeleted = false)
         {
-            var query = includeDeleted ? _context.Users.IncludeDeleted() : _context.Users;
-
-            var users = await query
+            var users = await _context.Users
+                .IncludeDeleted(includeDeleted)
                 .Include(u => u.Reservations)
                 .ThenInclude(r => r.Room)
                 .ToListAsync();
@@ -29,9 +28,8 @@ namespace ConferenceRoom.Api.Services.UserService
 
         public async Task<Result<UserDto>> GetUserByIdAsync(int id, bool includeDeleted = false)
         {
-            var query = includeDeleted ? _context.Users.IncludeDeleted() : _context.Users;
-
-            var user = await query
+            var user = await _context.Users
+                .IncludeDeleted(includeDeleted)
                 .Include(u => u.Reservations)
                 .ThenInclude(r => r.Room)
                 .FirstOrDefaultAsync(u => u.Id == id);

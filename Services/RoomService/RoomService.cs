@@ -17,9 +17,8 @@ namespace ConferenceRoom.Api.Services.RoomService
 
         public async Task<Result<List<RoomDTO>>> GetAllRoomsAsync(bool includeDeleted = false)
         {
-            var query = includeDeleted ? _context.Rooms.IncludeDeleted() : _context.Rooms;
-
-            var rooms = await query
+            var rooms = await _context.Rooms
+                .IncludeDeleted(includeDeleted)
                 .Include(r => r.Reservations)
                 .ThenInclude(res => res.User)
                 .ToListAsync();
@@ -31,9 +30,8 @@ namespace ConferenceRoom.Api.Services.RoomService
 
         public async Task<Result<RoomDTO>> GetRoomByIdAsync(int id, bool includeDeleted = false)
         {
-            var query = includeDeleted ? _context.Rooms.IncludeDeleted() : _context.Rooms;
-
-            var room = await query
+            var room = await _context.Rooms
+                .IncludeDeleted(includeDeleted)
                 .Include(r => r.Reservations)
                 .ThenInclude(res => res.User)
                 .FirstOrDefaultAsync(r => r.Id == id);
